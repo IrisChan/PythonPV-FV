@@ -1,4 +1,6 @@
 from decimal import *
+import pandas as pandas
+import numpy as np
 
 def pv(fv, rate, nPeriods):
     """
@@ -32,5 +34,34 @@ def printPV(fv, rate, nPeriods):
     except ValueError as e:
         print(e)
 
+def getPVs(filePath):
+    '''
+    Read future value, rate, number of periods from a .csv file, compute the present value for each of them
+
+    Given:
+        `filePath': the absolute path for the .csv file
+
+    Return:
+        `df`: dataframe that contains pv, fv, rate, nPeriods.
+    '''
+    try:
+        df = pandas.read_csv(filePath, converters={'fv': Decimal, 'rate': Decimal, 'nPeriods': Decimal})
+        
+        # Apply the pv function to each row read from .csv file and create an additional column 'pv' to keep the result.
+        df['pv'] = df.apply(lambda row: pv(row['fv'], row['rate'], row['nPeriods']), axis = 1)
+
+        print(df)
+    except Exception, e:
+        print("Error in reading " + filePath)
+        print e
+        df = pandas.DataFrame()
+    
+    return df
+
+
 if __name__ == '__main__':
+    # Problem 4
     printPV(1000, 0.1, 5)
+
+    # Problem 5
+    getPVs('inputToProblem5.csv')
