@@ -16,7 +16,7 @@ def pv(fv, rate, nPeriods):
         smaller than 0, return valueError
     """
     if nPeriods < 0:
-        raise ValueError("Number of periods should be non-negative.")
+        raise ValueError("Number of periods should be non-negative.\n")
 
     temp = (1+rate)**nPeriods
     pv = Decimal(fv / temp)
@@ -30,7 +30,7 @@ def printPV(fv, rate, nPeriods):
     try:
         val = pv(fv, rate, nPeriods)
         print(('With future value = {0}, rate = {1}, number of '
-              'periods = {2}, the present value is {3}.').format(fv, rate, nPeriods, val))
+              'periods = {2}, the present value is {3}.\n').format(fv, rate, nPeriods, val))
     except ValueError as e:
         print(e)
 
@@ -39,7 +39,7 @@ def getPVs(filePath):
     Read future value, rate, number of periods from a .csv file, compute the present value for each of them
 
     Given:
-        `filePath': the absolute path for the .csv file
+        `filePath`: the absolute path for the .csv file
 
     Return:
         `df`: dataframe that contains pv, fv, rate, nPeriods.
@@ -49,8 +49,6 @@ def getPVs(filePath):
         
         # Apply the pv function to each row read from .csv file and create an additional column 'pv' to keep the result.
         df['pv'] = df.apply(lambda row: pv(row['fv'], row['rate'], row['nPeriods']), axis = 1)
-
-        print(df)
     except Exception, e:
         print("Error in reading " + filePath)
         print e
@@ -59,9 +57,68 @@ def getPVs(filePath):
     return df
 
 
+def delta(pv1, pv2, rate1, rate2):
+    '''
+    Compute the `delta of pv / delta of rate`
+
+    Given:
+        `pv1`: the first present value
+        `pv2`: the second present value
+        `rate1`: the first rate
+        `rate2`: the second rate
+
+    Return:
+        `delta`: delta of pv / delta of rate
+    '''
+    if (rate1 == rate2):
+        return 0
+    
+    delta = (pv1 - pv2) / (rate1 - rate2)
+
+    res = Decimal(delta.quantize(Decimal('.01'), rounding=ROUND_HALF_UP))
+
+    return res
+
+def getDeltas(filePath):
+    '''
+    Read future value, rate, number of periods from a .csv file, compute the `delta of pv / delta of rate` for each of them
+
+    Given:
+        `filePath': the absolute path for the .csv file
+
+    Return:
+        `df`: dataframe that contains pv, delta, fv, rate, nPeriods.
+    '''
+    df = getPVs(filePath)
+
+    for i in range(1, len(df)):
+        if (i == 0):
+            df.loc[i, 'delta'] = np.nan
+        else:
+            df.loc[i, 'delta'] = delta(df.loc[i - 1, 'pv'], df.loc[i, 'pv'], df.loc[i - 1, 'rate'], df.loc[i, 'rate'])
+
+    return df
+
+
+
+
+
+
+
+
 if __name__ == '__main__':
     # Problem 4
+    print("Output to problem 4:")
     printPV(1000, 0.1, 5)
 
     # Problem 5
-    getPVs('inputToProblem5.csv')
+    print("Output to problem 5:")
+    df = getPVs('inputToProblem5.csv')
+    print(df)
+    print('\n')
+
+    # Problem 8
+    print("Output to problem 8:")
+    df = getDeltas('inputToProblem8.csv')
+    print(df)
+    print('\n')
