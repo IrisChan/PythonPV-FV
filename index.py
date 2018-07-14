@@ -20,7 +20,7 @@ def pv(fv, rate, nPeriods):
 
     temp = (1+rate)**nPeriods
     pv = Decimal(fv / temp)
-    res = Decimal(pv.quantize(Decimal('.01'), rounding=ROUND_HALF_UP))
+    res = Decimal(pv.quantize(Decimal('.01'), rounding=ROUND_CEILING))
 
     return res
 
@@ -51,7 +51,7 @@ def getPVs(filePath):
         df['pv'] = df.apply(lambda row: pv(row['fv'], row['rate'], row['nPeriods']), axis = 1)
     except Exception, e:
         print("Error in reading " + filePath)
-        print e
+        print(e)
         df = pandas.DataFrame()
     
     return df
@@ -71,7 +71,7 @@ def delta(pv1, pv2, rate1, rate2):
         `delta`: delta of pv / delta of rate
     '''
     if (rate1 == rate2):
-        return 0
+        return np.nan
     
     delta = (pv1 - pv2) / (rate1 - rate2)
 
@@ -99,13 +99,6 @@ def getDeltas(filePath):
 
     return df
 
-
-
-
-
-
-
-
 if __name__ == '__main__':
     # Problem 4
     print("Output to problem 4:")
@@ -122,3 +115,27 @@ if __name__ == '__main__':
     df = getDeltas('inputToProblem8.csv')
     print(df)
     print('\n')
+
+
+
+'''
+Output to problem 4:
+With future value = 1000, rate = 0.1, number of periods = 5, the present value is 620.93.
+
+Output to problem 5:
+       fv  rate nPeriods      pv
+0  100.00  0.05        1   95.24
+1  -50.00  0.05        2  -45.35
+2   35.00  0.05        3   30.24
+3  -35.00  0.05        1  -33.33
+4   50.00  0.05        1   47.62
+
+
+Output to problem 8:
+        fv  rate nPeriods       pv     delta
+0   500.00  0.07        1   467.29       NaN
+1   750.00  0.10        3   563.49   3206.67
+2  -550.00  0.03        2  -518.42  15455.86
+
+
+'''
