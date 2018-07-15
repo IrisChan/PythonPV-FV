@@ -132,10 +132,8 @@ Output to problem 5:
 
 
 Output to problem 8:
-        fv  rate nPeriods       pv     delta
-0   500.00  0.07        1   467.29       NaN
-1   750.00  0.10        3   563.49   3206.67
-2  -550.00  0.03        2  -518.42  15455.86
-
-
+          fv    rate nPeriods     delta
+0   500.0000  0.0700        1       NaN
+1   750.0000  0.0950        3   4158.03
+2  -550.0000  0.0250        2  15639.12
 '''

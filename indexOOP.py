@@ -36,13 +36,13 @@ class Calculations:
             Present value with output round to two decimal places with valid inputs. If number of periods is 
             smaller than 0, return valueError
         """
-        try:
-            model = FModel(fv, rate, nPeriods)
-            pv = model.pv()
-               
-            return pv
-        except ValueError as e:
-            print(e)
+        if nPeriods < 0:
+            raise ValueError("Number of periods should be non-negative.\n")
+
+        model = FModel(rate, nPeriods, fv)
+        pv = dollar(model.pv())
+            
+        return pv
 
     def computePVfromFile(self, filePath):
         '''
@@ -79,8 +79,8 @@ class Calculations:
         if (r1 == r2):
             return np.nan
         
-        fm1 = FModel(fv1, r1, nPeriods1)
-        fm2 = FModel(fv2, r2, nPeriods2)
+        fm1 = FModel(r1, nPeriods1, fv1)
+        fm2 = FModel(r2, nPeriods2, fv2)
 
         delta = dollar((fm1.pv() - fm2.pv()) / (fm1.rate() - fm2.rate()))
         return delta
@@ -99,26 +99,32 @@ class Calculations:
     def print_summary(self, fv, rate, nPeriods, pv):
         print(('With future value = {0}, rate = {1}, number of '
                'periods = {2}, the present value is {3}.\n').format(fv, rate, nPeriods, pv))
- 
 
 class FModel:
-    def __init__(self, fv, rate, nPeriods):
-        if nPeriods < 0:
-            raise ValueError("Number of periods should be non-negative.\n")
-
+    def __init__(self, rate, nPeriods, fv=None, pv=None):
         self._fv = fv
         self._rate = rate
         self._nPeriods = nPeriods
-        self._pv = np.nan
+        self._pv = pv
 
     def pv(self):
-        if np.isnan(self._pv):
+        if self._pv is None and self._fv is None:
+            return self._pv
+
+        if self._pv is None:
             temp = (1 + self.rate()) ** self.nPeriods()
-            self._pv = dollar(self.fv() / temp)
+            self._pv = self.fv() / temp
         
         return self._pv
 
     def fv(self):
+        if self._fv is None and self._pv is None:
+            return self._fv
+
+        if self._fv is None:
+            temp = (1 + self.rate()) ** self.nPeriods()
+            self._fv = self.pv() * temp
+
         return self._fv
 
     def rate(self):
@@ -146,12 +152,12 @@ def main():
     df = cal.computeDeltaFromFile('inputToProblem8.csv')
     print(df) 
 
-
 if __name__ == '__main__':
     main()
 
     
 '''
+Output to problem 4:
 With future value = 1000, rate = 0.1, number of periods = 5, the present value is 620.93.
 
 Output to problem 5:
@@ -164,8 +170,8 @@ Output to problem 5:
 
 
 Output to problem 8:
-        fv  rate nPeriods     delta
-0   500.00  0.07        1       NaN
-1   750.00  0.10        3   3206.67
-2  -550.00  0.03        2  15455.86
+          fv    rate nPeriods     delta
+0   500.0000  0.0700        1       NaN
+1   750.0000  0.0950        3   4158.03
+2  -550.0000  0.0250        2  15639.12
 '''
